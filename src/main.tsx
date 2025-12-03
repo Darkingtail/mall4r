@@ -8,7 +8,6 @@ if (!container) {
 	throw new Error("Root element not found");
 }
 
-// codex resume 019a863a-22bc-7831-a58a-2a07f81cbc7d
 createRoot(container).render(
 	<StrictMode>
 		<App />
