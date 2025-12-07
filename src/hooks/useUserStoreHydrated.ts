@@ -31,4 +31,3 @@ export default function useUserStoreHydrated<T>(selector: Selector<T>) {
 		value: selectedState,
 	};
 }
-

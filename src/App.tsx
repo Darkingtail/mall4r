@@ -7,10 +7,7 @@ import useRouteStore from "./store/routerStore";
 
 function App() {
 	const menuList = useRouteStore((state) => state.menuList);
-	const routes = useMemo(
-		() => buildRoutesFromMenu(menuList),
-		[menuList],
-	);
+	const routes = useMemo(() => buildRoutesFromMenu(menuList), [menuList]);
 	return (
 		<>
 			<AntdConfig>

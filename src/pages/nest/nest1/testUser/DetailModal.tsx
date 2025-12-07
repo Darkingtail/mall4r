@@ -10,8 +10,10 @@ export interface TestUserFormFields {
 	hobby: string[];
 }
 
-export interface TestUserFormFieldsString
-	extends Omit<TestUserFormFields, "hobby"> {
+export interface TestUserFormFieldsString extends Omit<
+	TestUserFormFields,
+	"hobby"
+> {
 	hobby: string;
 }
 

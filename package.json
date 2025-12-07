@@ -6,9 +6,10 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc -b && vite build",
-		"lint": "eslint .",
+		"lint": "pnpm format:check && eslint .",
 		"preview": "vite preview",
-		"format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,scss,json,md}\""
+		"format": "prettier --write .",
+		"format:check": "prettier --check ."
 	},
 	"dependencies": {
 		"@ant-design/cssinjs": "^2.0.1",
