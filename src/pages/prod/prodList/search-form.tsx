@@ -5,26 +5,27 @@ export type FormValues = Omit<FetchProdListPageRequestPayload, "t">;
 
 interface SearchFormProps {
 	onSearch: (values: FormValues) => void;
+	onReset: (values: FormValues) => void;
 }
 
-export default function SearchForm({ onSearch }: SearchFormProps) {
+export default function SearchForm({ onSearch, onReset }: SearchFormProps) {
 	const [form] = Form.useForm<FormValues>();
 
 	const onFormFinish: FormProps<FormValues>["onFinish"] = (values) => {
-		onSearch(values);
+		const { status } = values;
+		const selectedStatus = status === -1 ? undefined : status;
+		onSearch({ ...values, status: selectedStatus });
 	};
 
 	const handleReset = () => {
 		form.resetFields();
+		const { status } = form.getFieldsValue();
+		const selectedStatus = status === -1 ? undefined : status;
+		onReset({ ...form.getFieldsValue(), status: selectedStatus });
 	};
 
 	return (
-		<Form
-			form={form}
-			layout="inline"
-			initialValues={{ status: -1 }}
-			onFinish={onFormFinish}
-		>
+		<Form form={form} layout="inline" initialValues={{ status: -1 }} onFinish={onFormFinish}>
 			<Form.Item label="产品名字" name="prodName">
 				<Input placeholder="请输入商品名称" allowClear />
 			</Form.Item>

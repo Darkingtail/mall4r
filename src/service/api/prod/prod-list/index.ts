@@ -8,8 +8,8 @@ export type ProdList = ProdListItem[];
 
 export interface FetchProdListPageRequestPayload {
 	t: number;
-	prodName: string;
-	status: number;
+	prodName?: string;
+	status?: number;
 	current: number;
 	size: number;
 }
@@ -25,7 +25,7 @@ export interface FetchProdListPageResponse {
 const PROD_LIST_BASE_PATH = "/prod/prod";
 const PAGE = `${PROD_LIST_BASE_PATH}/page`;
 
-export function  createProdListApi(client: HttpClient = httpClient) {
+export function createProdListApi(client: HttpClient = httpClient) {
 	return {
 		fetchProdListPage<T = FetchProdListPageResponse>(
 			params: FetchProdListPageRequestPayload,
@@ -46,4 +46,4 @@ export function  createProdListApi(client: HttpClient = httpClient) {
 	};
 }
 
-export const prodListApi =  createProdListApi();
+export const prodListApi = createProdListApi();

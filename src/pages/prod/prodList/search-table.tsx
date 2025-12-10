@@ -1,31 +1,44 @@
 import type { ProdListItem } from "@/service/api/prod/prod-list";
 import { Table, type TableColumnsType } from "antd";
-import { useState } from "react";
 
 export default function SearchTable({
+	dataSource,
+	total,
+	current,
+	size,
+	onPageSizeChange,
 	onPaginationChange,
 }: {
+	dataSource?: ProdListItem[];
+	total: number;
+	current: number;
+	size: number;
+	onPageSizeChange?: (size: number) => void;
 	onPaginationChange?: (page: number) => void;
 }) {
 	const columns: TableColumnsType<ProdListItem> = [{ title: "Product", dataIndex: "prodName" }];
-	const dataSource = Array.from<ProdListItem>({ length: 46 }).map<ProdListItem>((_, i) => ({
-		key: i + 1,
-		prodName: `Product ${i + 1}`,
-	}));
-
-	const [current, setCurrent] = useState(1);
-
 	const handlePageChange = (page: number) => {
-		setCurrent(page);
-		if (onPaginationChange) {
-			onPaginationChange(page);
-		}
+		onPaginationChange?.(page);
+	};
+	const handlePageSizeChange = (_: number, size: number) => {
+		onPageSizeChange?.(size);
 	};
 	return (
 		<Table<ProdListItem>
+			className="mt-2"
 			columns={columns}
 			dataSource={dataSource}
-			pagination={{ current, onChange: handlePageChange }}
+			pagination={{
+				position: ["bottomLeft"],
+				showQuickJumper: true,
+				showSizeChanger: true,
+				showTotal: (total) => `Total ${total} items`,
+				current,
+				total,
+				pageSize: size,
+				onChange: handlePageChange,
+				onShowSizeChange: handlePageSizeChange,
+			}}
 		/>
 	);
 }
