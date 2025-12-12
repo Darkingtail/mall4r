@@ -2,6 +2,7 @@ import type { ProdListItem } from "@/service/api/prod/prod-list";
 import { Table, type TableColumnsType } from "antd";
 
 export default function SearchTable({
+	loading,
 	dataSource,
 	total,
 	current,
@@ -9,6 +10,7 @@ export default function SearchTable({
 	onPageSizeChange,
 	onPaginationChange,
 }: {
+	loading?: boolean;
 	dataSource?: ProdListItem[];
 	total: number;
 	current: number;
@@ -26,6 +28,8 @@ export default function SearchTable({
 	return (
 		<Table<ProdListItem>
 			className="mt-2"
+			rowKey="prodId"
+			loading={loading}
 			columns={columns}
 			dataSource={dataSource}
 			pagination={{

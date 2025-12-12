@@ -1,6 +1,7 @@
 import { type HttpClient, httpClient } from "@/service";
 
 export interface ProdListItem {
+	prodId: number;
 	prodName: string;
 }
 

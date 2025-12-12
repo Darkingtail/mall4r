@@ -1,27 +1,26 @@
 import type { FetchProdListPageRequestPayload } from "@/service/api/prod/prod-list";
 import { Button, Form, Input, Select, type FormProps } from "antd";
 
-export type FormValues = Omit<FetchProdListPageRequestPayload, "t">;
+export type FormValues = Omit<FetchProdListPageRequestPayload, "t" | "current" | "size">;
 
 interface SearchFormProps {
 	onSearch: (values: FormValues) => void;
 	onReset: (values: FormValues) => void;
 }
 
+const normalizeStatus = (status?: number) => (status === -1 ? undefined : status);
+
 export default function SearchForm({ onSearch, onReset }: SearchFormProps) {
 	const [form] = Form.useForm<FormValues>();
 
 	const onFormFinish: FormProps<FormValues>["onFinish"] = (values) => {
-		const { status } = values;
-		const selectedStatus = status === -1 ? undefined : status;
-		onSearch({ ...values, status: selectedStatus });
+		onSearch({ ...values, status: normalizeStatus(values.status) });
 	};
 
 	const handleReset = () => {
 		form.resetFields();
-		const { status } = form.getFieldsValue();
-		const selectedStatus = status === -1 ? undefined : status;
-		onReset({ ...form.getFieldsValue(), status: selectedStatus });
+		const values = form.getFieldsValue();
+		onReset({ ...values, status: normalizeStatus(values.status) });
 	};
 
 	return (
