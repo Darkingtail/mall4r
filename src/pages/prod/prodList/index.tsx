@@ -3,10 +3,12 @@ import {
 	type FetchProdListPageRequestPayload,
 	type ProdListItem,
 } from "@/service/api/prod/prod-list";
+import { Button } from "antd";
 import { useEffect, useState } from "react";
+import DetailModal from "./detail-modal";
 import type { FormValues } from "./search-form";
 import SearchForm from "./search-form";
-import Table from "./search-table";
+import SearchTable from "./search-table";
 
 export default function ProdList() {
 	const [dataSource, setDataSource] = useState<ProdListItem[]>([]);
@@ -15,6 +17,8 @@ export default function ProdList() {
 	const [size, setSize] = useState(10);
 	const [loading, setLoading] = useState(false);
 	const [searchParams, setSearchParams] = useState<FormValues>({});
+	// 详情Modal显示状态
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const fetchProdList = (values: FetchProdListPageRequestPayload) => {
 		setLoading(true);
@@ -44,7 +48,10 @@ export default function ProdList() {
 	return (
 		<>
 			<SearchForm onSearch={onSearch} onReset={onSearchReset} />
-			<Table
+			<Button type="primary" onClick={() => setIsModalOpen(true)}>
+				新增
+			</Button>
+			<SearchTable
 				loading={loading}
 				dataSource={dataSource}
 				total={total}
@@ -53,6 +60,7 @@ export default function ProdList() {
 				onPaginationChange={setCurrent}
 				onPageSizeChange={setSize}
 			/>
+			<DetailModal isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
 		</>
 	);
 }
