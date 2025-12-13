@@ -37,9 +37,7 @@ export function createTestUserApi(client: HttpClient = httpClient) {
 		fetchHobbyList(): Promise<{ label: string; value: string }[]> {
 			return client.get(`${USER_TESTUSER_HOBBY_LIST}`);
 		},
-		page<T = GetTestUserPageResponse>(
-			params: GetTestUserPagePayload,
-		): Promise<T> {
+		page<T = GetTestUserPageResponse>(params: GetTestUserPagePayload): Promise<T> {
 			const urlParams = Object.entries(params)
 				.map(([key, value]) => {
 					if (value === undefined || value === null || value === "") {
@@ -64,7 +62,10 @@ export function createTestUserApi(client: HttpClient = httpClient) {
 			return client.put(`${USER_TESTUSER_UPDATE}`, testUser);
 		},
 		delete(id: number): Promise<void> {
-			return client.delete(`${USER_TESTUSER_DELETE}/${id}`);
+			return client.delete(`${USER_TESTUSER_DELETE}`, { data: [id] });
+		},
+		batchDelete(ids: number[]): Promise<void> {
+			return client.delete(`${USER_TESTUSER_DELETE}`, { data: ids });
 		},
 	};
 }

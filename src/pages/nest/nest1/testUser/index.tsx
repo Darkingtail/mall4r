@@ -1,18 +1,6 @@
-import {
-	type TestUser,
-	createTestUserApi,
-} from "@/service/api/nest/nest1/test-user";
+import { type TestUser, createTestUserApi } from "@/service/api/nest/nest1/test-user";
 import type { TableProps } from "antd";
-import {
-	App as AntApp,
-	Button,
-	Form,
-	Input,
-	Popconfirm,
-	Space,
-	Table,
-	Tag,
-} from "antd";
+import { App as AntApp, Button, Form, Input, Modal, Popconfirm, Space, Table, Tag } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	DetailModal,
@@ -37,9 +25,16 @@ const TestUserPage: React.FC = () => {
 	const [filters, setFilters] = useState<FilterValues>({});
 	const [form] = Form.useForm<FilterValues>();
 	const [detailModalOpen, setDetailModalOpen] = useState(false);
-	const [detailModalType, setDetailModalType] =
-		useState<DetailModalType>("add");
+	const [detailModalType, setDetailModalType] = useState<DetailModalType>("add");
 	const [confirmLoading, setConfirmLoading] = useState(false);
+	const [selected, setSelected] = useState<{
+		selectedRowKeys: React.Key[];
+		selectedRows: TestUser[];
+	}>({
+		selectedRowKeys: [],
+		selectedRows: [],
+	});
+	const [batchDeleteModalOpen, setBatchDeleteModalOpen] = useState(false);
 	const modalRef = useRef<DetailModalHandle>(null);
 	const [editingRecord, setEditingRecord] = useState<TestUser | null>(null);
 	const { message } = AntApp.useApp();
@@ -83,10 +78,7 @@ const TestUserPage: React.FC = () => {
 						Update
 					</Button>
 
-					<Popconfirm
-						title="Sure to delete?"
-						onConfirm={() => handleDelete(record)}
-					>
+					<Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}>
 						<Button type="link">Delete</Button>
 					</Popconfirm>
 				</Space>
@@ -249,48 +241,91 @@ const TestUserPage: React.FC = () => {
 		setEditingRecord(null);
 	};
 
+	const handleBatchDeleteCancel = () => {
+		setBatchDeleteModalOpen(false);
+	};
+
+	const handleBatchDelete = () => {
+		if (!selected.selectedRowKeys.length) {
+			message.warning("Please select at least one user");
+			return;
+		}
+		setBatchDeleteModalOpen(true);
+	};
+
+	const handleBatchDeleteOk = () => {
+		const ids = selected.selectedRowKeys as number[];
+		void testUserApi
+			.batchDelete(ids)
+			.then(() => {
+				fetchDataSource();
+				message.success("Users deleted successfully");
+			})
+			.catch((error) => {
+				console.log("error:", error);
+			})
+			.finally(() => {
+				setBatchDeleteModalOpen(false);
+				setSelected({
+					selectedRowKeys: [],
+					selectedRows: [],
+				});
+			});
+	};
+
 	return (
 		<>
-			<Form form={form} layout="inline" clearOnDestroy onFinish={handleSearch}>
-				<Form.Item label="username" name="userName">
-					<Input placeholder="input userName" />
-				</Form.Item>
-				<Form.Item label="password" name="password">
-					<Input placeholder="input password" />
-				</Form.Item>
-				<Form.Item label="hobby" name="hobby">
-					<Input placeholder="input hobby" />
-				</Form.Item>
-				<Form.Item>
-					<Button type="primary" htmlType="submit">
-						Submit
-					</Button>
-				</Form.Item>
-				<Form.Item>
-					<Button onClick={handleReset}>Clear</Button>
-				</Form.Item>
-			</Form>
-			<Button onClick={() => handleAdd()}>Add</Button>
-			<Table<TestUser>
-				className="mt-2"
-				size="small"
-				loading={loading}
-				columns={columns}
-				rowKey={(record) =>
-					record.id ?? `${record.userName}-${record.createTime}`
-				}
-				pagination={{
-					position: ["bottomLeft"],
-					showQuickJumper: true,
-					showSizeChanger: true,
-					current,
-					pageSize,
-					total,
-					onChange: handlePaginationChange,
-					onShowSizeChange: handlePageSizeChange,
-				}}
-				dataSource={dataSource}
-			/>
+			<Space direction="vertical" size="middle" style={{ display: "flex" }}>
+				<Form form={form} layout="inline" clearOnDestroy onFinish={handleSearch}>
+					<Form.Item label="username" name="userName">
+						<Input placeholder="input userName" />
+					</Form.Item>
+					<Form.Item label="password" name="password">
+						<Input placeholder="input password" />
+					</Form.Item>
+					<Form.Item label="hobby" name="hobby">
+						<Input placeholder="input hobby" />
+					</Form.Item>
+					<Form.Item>
+						<Button type="primary" htmlType="submit">
+							Submit
+						</Button>
+					</Form.Item>
+					<Form.Item>
+						<Button onClick={handleReset}>Clear</Button>
+					</Form.Item>
+				</Form>
+				<Space>
+					<Button onClick={() => handleAdd()}>Add</Button>
+					<Button onClick={() => handleBatchDelete()}>batch delete</Button>
+				</Space>
+				<Table<TestUser>
+					className="mt-2"
+					size="small"
+					loading={loading}
+					columns={columns}
+					rowKey={(record) => record.id ?? `${record.userName}-${record.createTime}`}
+					pagination={{
+						position: ["bottomLeft"],
+						showQuickJumper: true,
+						showSizeChanger: true,
+						current,
+						pageSize,
+						total,
+						onChange: handlePaginationChange,
+						onShowSizeChange: handlePageSizeChange,
+					}}
+					dataSource={dataSource}
+					rowSelection={{
+						onChange: (selectedRowKeys: React.Key[], selectedRows: TestUser[]) => {
+							setSelected({
+								selectedRowKeys,
+								selectedRows,
+							});
+						},
+					}}
+				/>
+			</Space>
 			<DetailModal
 				ref={modalRef}
 				type={detailModalType}
@@ -308,6 +343,20 @@ const TestUserPage: React.FC = () => {
 				onOk={(values: TestUserFormFields) => handleDetailModalOk(values)}
 				onCancel={() => handleDetailModalClose()}
 			/>
+			<Modal
+				open={batchDeleteModalOpen}
+				title="Delete"
+				onOk={handleBatchDeleteOk}
+				onCancel={handleBatchDeleteCancel}
+				footer={(_, { OkBtn, CancelBtn }) => (
+					<>
+						<CancelBtn />
+						<OkBtn />
+					</>
+				)}
+			>
+				Do you sure to delete these users?
+			</Modal>
 		</>
 	);
 };
