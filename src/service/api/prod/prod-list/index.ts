@@ -49,6 +49,12 @@ export function createProdListApi(client: HttpClient = httpClient) {
 			const url = urlParams ? `${PAGE}?${urlParams}` : PAGE;
 			return client.get<T, T>(url);
 		},
+		delete(id: number): Promise<void> {
+			return client.delete<void, void>(`${PROD_LIST_BASE_PATH}`, { data: [id] });
+		},
+		batchDelete(ids: number[]): Promise<void> {
+			return client.delete<void, void>(`${PROD_LIST_BASE_PATH}`, { data: ids });
+		},
 	};
 }
 

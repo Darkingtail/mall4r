@@ -1,5 +1,5 @@
-import type { ProdListItem } from "@/service/api/prod/prod-list";
-import { Button, Image, Popconfirm, Space, Table, type TableColumnsType } from "antd";
+import { createProdListApi, type ProdListItem } from "@/service/api/prod/prod-list";
+import { Button, Image, message, Popconfirm, Space, Table, type TableColumnsType } from "antd";
 
 export default function SearchTable({
 	loading,
@@ -9,6 +9,8 @@ export default function SearchTable({
 	size,
 	onPageSizeChange,
 	onPaginationChange,
+	onSelectionChange,
+	onRefresh,
 }: {
 	loading?: boolean;
 	dataSource?: ProdListItem[];
@@ -17,6 +19,8 @@ export default function SearchTable({
 	size: number;
 	onPageSizeChange?: (size: number) => void;
 	onPaginationChange?: (page: number) => void;
+	onSelectionChange?: (selectedRowKeys: React.Key[]) => void;
+	onRefresh?: () => void;
 }) {
 	const dictData = [
 		{
@@ -32,7 +36,11 @@ export default function SearchTable({
 		console.log(record);
 	};
 	const handleDelete = (record: ProdListItem) => {
-		console.log(record);
+		const { delete: deleteSingle } = createProdListApi();
+		deleteSingle(record.prodId as number).then(() => {
+			message.success("删除成功");
+			onRefresh?.();
+		});
 	};
 	const columns: TableColumnsType<ProdListItem> = [
 		{ title: "产品名称", dataIndex: "prodName" },
@@ -61,7 +69,12 @@ export default function SearchTable({
 					<Button type="link" onClick={() => handleEdit(record)}>
 						编辑
 					</Button>
-					<Popconfirm title="确定删除吗？" onConfirm={() => handleDelete(record)}>
+					<Popconfirm
+						title="确定删除吗？"
+						onConfirm={() => handleDelete(record)}
+						okText="确定"
+						cancelText="取消"
+					>
 						<Button type="link">删除</Button>
 					</Popconfirm>
 				</Space>
@@ -91,6 +104,11 @@ export default function SearchTable({
 				pageSize: size,
 				onChange: handlePageChange,
 				onShowSizeChange: handlePageSizeChange,
+			}}
+			rowSelection={{
+				onChange: (selectedRowKeys: React.Key[]) => {
+					onSelectionChange?.(selectedRowKeys);
+				},
 			}}
 		/>
 	);
