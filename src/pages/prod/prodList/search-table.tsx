@@ -11,6 +11,7 @@ export default function SearchTable({
 	onPaginationChange,
 	onSelectionChange,
 	onRefresh,
+	onEdit,
 }: {
 	loading?: boolean;
 	dataSource?: ProdListItem[];
@@ -21,6 +22,7 @@ export default function SearchTable({
 	onPaginationChange?: (page: number) => void;
 	onSelectionChange?: (selectedRowKeys: React.Key[]) => void;
 	onRefresh?: () => void;
+	onEdit?: (prodId: number) => void;
 }) {
 	const dictData = [
 		{
@@ -33,7 +35,9 @@ export default function SearchTable({
 		},
 	];
 	const handleEdit = (record: ProdListItem) => {
-		console.log(record);
+		if (record.prodId) {
+			onEdit?.(record.prodId);
+		}
 	};
 	const handleDelete = (record: ProdListItem) => {
 		const { delete: deleteSingle } = createProdListApi();

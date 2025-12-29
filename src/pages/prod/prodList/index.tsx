@@ -20,6 +20,10 @@ export default function ProdList() {
 	const [searchParams, setSearchParams] = useState<FormValues>({});
 	// 详情Modal显示状态
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	// Modal类型：add新增 / edit编辑
+	const [modalType, setModalType] = useState<"add" | "edit">("add");
+	// 正在编辑的商品ID
+	const [editingProdId, setEditingProdId] = useState<number | undefined>();
 	// 选中的行key
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
@@ -70,6 +74,18 @@ export default function ProdList() {
 		fetchProdList({ ...searchParams, current, size, t: Date.now() });
 	};
 
+	const handleAdd = () => {
+		setModalType("add");
+		setEditingProdId(undefined);
+		setIsModalOpen(true);
+	};
+
+	const handleEdit = (prodId: number) => {
+		setModalType("edit");
+		setEditingProdId(prodId);
+		setIsModalOpen(true);
+	};
+
 	useEffect(() => {
 		fetchProdList({ ...searchParams, current, size, t: Date.now() });
 	}, [current, size, searchParams]);
@@ -79,7 +95,7 @@ export default function ProdList() {
 			<Space direction="vertical" size="middle" style={{ display: "flex" }}>
 				<SearchForm onSearch={onSearch} onReset={onSearchReset} />
 				<Space>
-					<Button type="primary" onClick={() => setIsModalOpen(true)}>
+					<Button type="primary" onClick={handleAdd}>
 						新增
 					</Button>
 					<Button type="primary" onClick={() => handleBatchDelete()}>
@@ -96,9 +112,16 @@ export default function ProdList() {
 					onPageSizeChange={setSize}
 					onSelectionChange={setSelectedRowKeys}
 					onRefresh={handleRefresh}
+					onEdit={handleEdit}
 				/>
 			</Space>
-			<DetailModal isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
+			<DetailModal
+				isModalOpen={isModalOpen}
+				setIsModalOpen={setIsModalOpen}
+				type={modalType}
+				prodId={editingProdId}
+				onSuccess={handleRefresh}
+			/>
 		</>
 	);
 }
