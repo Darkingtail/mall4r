@@ -119,15 +119,21 @@ export default function DetailModal({
 
 								// 设置图片列表
 								if (data.imgs) {
-									const images = data.imgs.split(",").map((url, index) => ({
-										uid: `${-index - 1}`,
-										name: `image${index + 1}.jpg`,
+									const images = data.imgs
+	.split(",")
+	.filter((url) => url.trim()) // 过滤空字符串
+	.map((url, index) => ({
+										uid: String(-(index + 1)), // 负数uid表示已存在的文件
+										name: url.split("/").pop() || `image-${index + 1}.jpg`, // 从URL提取文件名
 										status: "done" as const,
 										url: url.trim(), // 去除可能的空格
-										thumbUrl: url.trim(), // 添加缩略图地址
+										thumbUrl: url.trim(),
+									percent: 100, // 已完成状态
 									}));
 									console.log("组装的图片列表:", images); // 调试：查看图片列表
+									console.log("设置前fileList:", fileList); // 查看设置前的状态
 									setFileList(images);
+									setTimeout(() => console.log("设置后fileList应该更新:", images), 10);
 								}
 							})
 							.catch((error) => {
