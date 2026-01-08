@@ -117,6 +117,12 @@ export function createProdListApi(client: HttpClient = httpClient) {
 		batchDelete(ids: number[]): Promise<void> {
 			return client.delete<void, void>(`${PROD_LIST_BASE_PATH}`, { data: ids });
 		},
+		// 更新商品上下架状态
+		updateProdStatus(prodId: number, prodStatus: number): Promise<void> {
+			return client.put<void, void>(
+				`${PROD_LIST_BASE_PATH}/prodStatus?prodId=${prodId}&prodStatus=${prodStatus}`,
+			);
+		},
 	};
 }
 

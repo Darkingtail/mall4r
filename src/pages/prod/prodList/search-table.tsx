@@ -46,6 +46,14 @@ export default function SearchTable({
 			onRefresh?.();
 		});
 	};
+	const handleToggleStatus = (record: ProdListItem) => {
+		const { updateProdStatus } = createProdListApi();
+		const newStatus = record.status === 1 ? 0 : 1;
+		updateProdStatus(record.prodId as number, newStatus).then(() => {
+			message.success(newStatus === 1 ? "上架成功" : "下架成功");
+			onRefresh?.();
+		});
+	};
 	const columns: TableColumnsType<ProdListItem> = [
 		{ title: "产品名称", dataIndex: "prodName" },
 		{ title: "产品原价", dataIndex: "oriPrice" },
@@ -72,6 +80,9 @@ export default function SearchTable({
 				<Space size="middle">
 					<Button type="link" onClick={() => handleEdit(record)}>
 						编辑
+					</Button>
+					<Button type="link" onClick={() => handleToggleStatus(record)}>
+						{record.status === 1 ? "下架" : "上架"}
 					</Button>
 					<Popconfirm
 						title="确定删除吗？"
