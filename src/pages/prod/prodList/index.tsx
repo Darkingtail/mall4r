@@ -1,127 +1,234 @@
 import {
-	createProdListApi,
-	prodListApi,
-	type FetchProdListPageRequestPayload,
 	type ProdListItem,
+	prodListApi,
 } from "@/service/api/prod/prod-list";
-import { Button, message, Modal, Space } from "antd";
-import { useEffect, useState } from "react";
-import DetailModal from "./detail-modal";
-import type { FormValues } from "./search-form";
-import SearchForm from "./search-form";
-import SearchTable from "./search-table";
+import {
+	App,
+	Button,
+	Form,
+	Image,
+	Input,
+	Popconfirm,
+	Select,
+	Space,
+	Table,
+	Tag,
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function ProdList() {
+export default function ProdListPage() {
+	const [form] = Form.useForm();
+	const [loading, setLoading] = useState(false);
 	const [dataSource, setDataSource] = useState<ProdListItem[]>([]);
 	const [total, setTotal] = useState(0);
 	const [current, setCurrent] = useState(1);
-	const [size, setSize] = useState(10);
-	const [loading, setLoading] = useState(false);
-	const [searchParams, setSearchParams] = useState<FormValues>({});
-	// 详情Modal显示状态
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	// Modal类型：add新增 / edit编辑
-	const [modalType, setModalType] = useState<"add" | "edit">("add");
-	// 正在编辑的商品ID
-	const [editingProdId, setEditingProdId] = useState<number | undefined>();
-	// 选中的行key
+	const [pageSize, setPageSize] = useState(10);
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
-	const fetchProdList = (values: FetchProdListPageRequestPayload) => {
+	const { message } = App.useApp();
+	const navigate = useNavigate();
+
+	const fetchDataSource = useCallback(async () => {
 		setLoading(true);
-		prodListApi
-			.fetchProdListPage(values)
-			.then((res) => {
-				setDataSource(res.records);
-				setTotal(res.total);
-			})
-			.finally(() => setLoading(false));
-	};
-
-	const onSearch = (values: FormValues) => {
-		setSearchParams(values);
-		setCurrent(1); // 搜索时重置到第一页
-	};
-
-	const onSearchReset = (values: FormValues) => {
-		setSearchParams(values);
-		setCurrent(1);
-	};
-
-	const handleBatchDelete = () => {
-		if (!selectedRowKeys.length) {
-			message.error("请至少选择一条数据");
-			return;
+		try {
+			const values = await form.getFieldsValue();
+			const res = await prodListApi.fetchProdListPage({
+				current,
+				size: pageSize,
+				...values,
+			});
+			setDataSource(res.records);
+			setTotal(res.total);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setLoading(false);
 		}
-		const { batchDelete } = createProdListApi();
-		Modal.confirm({
-			title: "警告",
-			content: "确定要删除这些数据吗？",
-			okType: "danger",
-			okText: "确定",
-			cancelText: "取消",
-			onOk() {
-				batchDelete(selectedRowKeys as number[]).then(() => {
-					message.success("删除成功");
-					setSelectedRowKeys([]);
-					fetchProdList({ ...searchParams, current, size, t: Date.now() });
-				});
-			},
-		});
-	};
-
-	const handleRefresh = () => {
-		fetchProdList({ ...searchParams, current, size, t: Date.now() });
-	};
-
-	const handleAdd = () => {
-		setModalType("add");
-		setEditingProdId(undefined);
-		setIsModalOpen(true);
-	};
-
-	const handleEdit = (prodId: number) => {
-		setModalType("edit");
-		setEditingProdId(prodId);
-		setIsModalOpen(true);
-	};
+	}, [current, pageSize, form]);
 
 	useEffect(() => {
-		fetchProdList({ ...searchParams, current, size, t: Date.now() });
-	}, [current, size, searchParams]);
+		fetchDataSource();
+	}, [fetchDataSource]);
+
+	const handleSearch = () => {
+		setCurrent(1);
+		fetchDataSource();
+	};
+
+	const handleReset = () => {
+		form.resetFields();
+		setCurrent(1);
+		fetchDataSource();
+	};
+
+	const handleDelete = async (ids: number[]) => {
+		try {
+			await prodListApi.deleteProd(ids);
+			message.success("删除成功");
+			setSelectedRowKeys([]);
+			fetchDataSource();
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const handleAddOrUpdate = (prodId?: number) => {
+		// 跳转到商品详情页，带上 prodId 参数
+		// 注意：需要确保路由中配置了 /prod/prodInfo 或者类似的路径
+		if (prodId) {
+			navigate(`/prod/prodInfo?prodId=${prodId}`);
+		} else {
+			navigate("/prod/prodInfo");
+		}
+	};
+
+	const columns: ColumnsType<ProdListItem> = [
+		{
+			title: "商品图片",
+			dataIndex: "pic",
+			key: "pic",
+			width: 100,
+			render: (pic: string, record) => {
+				// 优先使用 pic，如果没有则尝试从 imgs 中取第一张
+				let imgUrl = pic;
+				if (!imgUrl && record.imgs) {
+					imgUrl = record.imgs.split(",")[0];
+				}
+				// 简单的占位符处理，实际项目中可以用默认图
+				return imgUrl ? (
+					<Image src={imgUrl} width={50} height={50} className="object-cover" />
+				) : (
+					<div className="flex h-[50px] w-[50px] items-center justify-center bg-gray-100 text-xs text-gray-400">
+						无图
+					</div>
+				);
+			},
+		},
+		{
+			title: "商品名称",
+			dataIndex: "prodName",
+			key: "prodName",
+			ellipsis: true,
+		},
+		{
+			title: "原价",
+			dataIndex: "oriPrice",
+			key: "oriPrice",
+			render: (price) => `¥${price}`,
+		},
+		{
+			title: "现价",
+			dataIndex: "price",
+			key: "price",
+			render: (price) => <span className="text-red-500">¥{price}</span>,
+		},
+		{
+			title: "库存",
+			dataIndex: "totalStocks",
+			key: "totalStocks",
+		},
+		{
+			title: "状态",
+			dataIndex: "status",
+			key: "status",
+			render: (status: number) => (
+				<Tag color={status === 1 ? "success" : "default"}>
+					{status === 1 ? "上架" : "下架"}
+				</Tag>
+			),
+		},
+		{
+			title: "操作",
+			key: "action",
+			width: 180,
+			render: (_, record) => (
+				<Space>
+					<Button
+						type="link"
+						size="small"
+						onClick={() => handleAddOrUpdate(record.prodId)}
+					>
+						修改
+					</Button>
+					<Popconfirm
+						title="确定删除吗？"
+						onConfirm={() => handleDelete([record.prodId])}
+					>
+						<Button type="link" danger size="small">
+							删除
+						</Button>
+					</Popconfirm>
+				</Space>
+			),
+		},
+	];
 
 	return (
-		<>
-			<Space direction="vertical" size="middle" style={{ display: "flex" }}>
-				<SearchForm onSearch={onSearch} onReset={onSearchReset} />
+		<div className="p-4 bg-white rounded-lg shadow-sm">
+			<Form form={form} layout="inline" className="mb-4">
+				<Form.Item name="prodName" label="商品名称">
+					<Input placeholder="请输入商品名称" allowClear />
+				</Form.Item>
+				<Form.Item name="status" label="状态">
+					<Select
+						placeholder="请选择状态"
+						allowClear
+						style={{ width: 120 }}
+						options={[
+							{ label: "上架", value: 1 },
+							{ label: "下架", value: 0 },
+						]}
+					/>
+				</Form.Item>
+				<Form.Item>
+					<Space>
+						<Button type="primary" onClick={handleSearch}>
+							查询
+						</Button>
+						<Button onClick={handleReset}>重置</Button>
+					</Space>
+				</Form.Item>
+			</Form>
+
+			<div className="mb-4">
 				<Space>
-					<Button type="primary" onClick={handleAdd}>
-						新增
+					<Button type="primary" onClick={() => handleAddOrUpdate()}>
+						新增商品
 					</Button>
-					<Button type="primary" onClick={() => handleBatchDelete()}>
-						批量删除
-					</Button>
+					<Popconfirm
+						title="确定删除选中的商品吗？"
+						disabled={selectedRowKeys.length === 0}
+						onConfirm={() => handleDelete(selectedRowKeys as number[])}
+					>
+						<Button danger disabled={selectedRowKeys.length === 0}>
+							批量删除
+						</Button>
+					</Popconfirm>
 				</Space>
-				<SearchTable
-					loading={loading}
-					dataSource={dataSource}
-					total={total}
-					current={current}
-					size={size}
-					onPaginationChange={setCurrent}
-					onPageSizeChange={setSize}
-					onSelectionChange={setSelectedRowKeys}
-					onRefresh={handleRefresh}
-					onEdit={handleEdit}
-				/>
-			</Space>
-			<DetailModal
-				isModalOpen={isModalOpen}
-				setIsModalOpen={setIsModalOpen}
-				type={modalType}
-				prodId={editingProdId}
-				onSuccess={handleRefresh}
+			</div>
+
+			<Table
+				rowKey="prodId"
+				columns={columns}
+				dataSource={dataSource}
+				loading={loading}
+				rowSelection={{
+					selectedRowKeys,
+					onChange: setSelectedRowKeys,
+				}}
+				pagination={{
+					current,
+					pageSize,
+					total,
+					showSizeChanger: true,
+					onChange: (page, size) => {
+						setCurrent(page);
+						setPageSize(size);
+					},
+				}}
 			/>
-		</>
+		</div>
 	);
 }
