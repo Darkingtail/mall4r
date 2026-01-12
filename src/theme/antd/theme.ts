@@ -53,9 +53,6 @@ const themeModeToken: Record<"dark" | "light", ThemeConfig> = {
 				triggerBg: "#14203a",
 				triggerColor: "#e2e8f0",
 			},
-			Content: {
-				bgColor: "#1e293b",
-			},
 			Menu: {
 				itemColor: "#cbd5f5",
 				itemHoverBg: "rgba(37, 99, 235, 0.12)",
@@ -69,7 +66,6 @@ const themeModeToken: Record<"dark" | "light", ThemeConfig> = {
 				defaultBorderColor: "#233047",
 				defaultColor: "#e2e8f0",
 				ghostBg: "transparent",
-				ghostColor: "#e2e8f0",
 			},
 			Card: {
 				colorBgContainer: "#1e293b",
@@ -113,9 +109,6 @@ const themeModeToken: Record<"dark" | "light", ThemeConfig> = {
 				triggerBg: "#e7edf8",
 				triggerColor: "#334155",
 			},
-			Content: {
-				bgColor: "#ffffff",
-			},
 			Menu: {
 				itemColor: "#475569",
 				itemHoverBg: "rgba(37, 99, 235, 0.08)",
@@ -129,7 +122,6 @@ const themeModeToken: Record<"dark" | "light", ThemeConfig> = {
 				defaultBorderColor: "#dbe3f4",
 				defaultColor: "#1f2937",
 				ghostBg: "transparent",
-				ghostColor: "#1f2937",
 			},
 			Card: {
 				colorBgContainer: "#ffffff",
