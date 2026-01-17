@@ -16,7 +16,7 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import DetailModal from "./detail-modal";
 
 export default function ProdListPage() {
 	const [form] = Form.useForm();
@@ -26,9 +26,11 @@ export default function ProdListPage() {
 	const [current, setCurrent] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+	const [modalOpen, setModalOpen] = useState(false);
+	const [modalType, setModalType] = useState<"add" | "edit">("add");
+	const [editingProdId, setEditingProdId] = useState<number | undefined>();
 
 	const { message } = App.useApp();
-	const navigate = useNavigate();
 
 	const fetchDataSource = useCallback(async () => {
 		setLoading(true);
@@ -75,13 +77,14 @@ export default function ProdListPage() {
 	};
 
 	const handleAddOrUpdate = (prodId?: number) => {
-		// 跳转到商品详情页，带上 prodId 参数
-		// 注意：需要确保路由中配置了 /prod/prodInfo 或者类似的路径
 		if (prodId) {
-			navigate(`/prod/prodInfo?prodId=${prodId}`);
+			setModalType("edit");
+			setEditingProdId(prodId);
 		} else {
-			navigate("/prod/prodInfo");
+			setModalType("add");
+			setEditingProdId(undefined);
 		}
+		setModalOpen(true);
 	};
 
 	const columns: ColumnsType<ProdListItem> = [
@@ -228,6 +231,14 @@ export default function ProdListPage() {
 						setPageSize(size);
 					},
 				}}
+			/>
+
+			<DetailModal
+				isModalOpen={modalOpen}
+				setIsModalOpen={setModalOpen}
+				type={modalType}
+				prodId={editingProdId}
+				onSuccess={fetchDataSource}
 			/>
 		</div>
 	);
