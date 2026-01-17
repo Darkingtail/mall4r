@@ -276,7 +276,7 @@ export default function DetailModal({
 			onCancel={handleCancel}
 			confirmLoading={confirmLoading}
 			width={800}
-			destroyOnClose
+			destroyOnHidden
 		>
 			<Form
 				form={form}

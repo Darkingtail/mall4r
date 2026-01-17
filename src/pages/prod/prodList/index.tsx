@@ -15,6 +15,7 @@ import {
 	Tag,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import DetailModal from "./detail-modal";
 
@@ -44,7 +45,10 @@ export default function ProdListPage() {
 			setDataSource(res.records);
 			setTotal(res.total);
 		} catch (error) {
-			console.error(error);
+			// 忽略请求取消错误（React StrictMode 会触发两次请求）
+			if (!axios.isCancel(error)) {
+				console.error(error);
+			}
 		} finally {
 			setLoading(false);
 		}

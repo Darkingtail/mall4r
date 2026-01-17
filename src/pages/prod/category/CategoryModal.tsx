@@ -221,7 +221,7 @@ export default function CategoryModal({
 			confirmLoading={confirmLoading}
 			onOk={handleOk}
 			onCancel={handleCancel}
-			destroyOnClose
+			destroyOnHidden
 			width={600}
 		>
 			<Form

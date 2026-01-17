@@ -18,6 +18,7 @@ export default defineConfig((config: UserConfig) => {
 			},
 		},
 		server: {
+			port: 5174,
 			open: false,
 			host: true,
 			proxy: {
